@@ -1,0 +1,55 @@
+---
+title: "Practical Machine Learning Project"
+author: "Ed Yang"
+date: "July 12, 2016"
+data source: http://groupware.les.inf.puc-rio.br/har
+---
+## Background
+
+Using wareable devices to find patterns in weight lifting exercise. Tester were asked to perform barbell lifts correctly and incorrectly in 5 different ways (A,B,C,D,E). 
+The goal of this project is to predict the manner of the test subjects in which they did the exercise.
+
+First, Loading the data 
+
+```{r setup, include=FALSE}
+rm(list = ls())
+if (!file.exists("pml-training.csv")) {
+  download.file("http://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv", destfile = "pml-training.csv")
+}
+if (!file.exists("pml-testing.csv")) {
+  download.file("http://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv", destfile = "pml-testing.csv")
+}
+traindata <- read.csv("pml-training.csv", sep = ",", na.strings = c("", "NA"))
+testdata <- read.csv("pml-testing.csv", sep = ",", na.strings = c("", "NA"))
+
+# Cleaning the data before split and learn
+
+
+# Parting training set into learning set and self testing set
+library(carat)
+train_split <- createDataPartition(y=traindata$classe, p=0.7, list=FALSE)
+mytrain <- traindata[train_split, ]
+mytest <- traindata[-train_split, ]
+
+
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
