@@ -9,9 +9,9 @@ data source: http://groupware.les.inf.puc-rio.br/har
 Using wareable devices to find patterns in weight lifting exercise. Tester were asked to perform barbell lifts correctly and incorrectly in 5 different ways (A,B,C,D,E). 
 The goal of this project is to predict the manner of the test subjects in which they did the exercise.
 
-First, Loading the data 
+## Loading the data 
 
-```{r setup, include=FALSE}
+```{r warning=FALSE, comment=FALSE}
 rm(list = ls())
 if (!file.exists("pml-training.csv")) {
   download.file("http://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv", destfile = "pml-training.csv")
@@ -21,35 +21,72 @@ if (!file.exists("pml-testing.csv")) {
 }
 traindata <- read.csv("pml-training.csv", sep = ",", na.strings = c("", "NA"))
 testdata <- read.csv("pml-testing.csv", sep = ",", na.strings = c("", "NA"))
+```
 
-# Cleaning the data before split and learn
+# Cleaning and spliting the data before learning
+
+```{r warning=FALSE, comment=FALSE}
+library(ggplot2)
+library(lattice)
+library(data.table)
+library(caret)
 
 
-# Parting training set into learning set and self testing set
-library(carat)
+
+cleaned <- names(traindata[,colSums(is.na(traindata)) == 0])[8:59]
+
+#Claenout first seven columns because they do not have relationship with the prediction we are interested in, so we take them out of the training data set.
+
+
+traindata <- traindata[,c(cleaned,"classe")]
+testdata <- testdata[,c(cleaned,"problem_id")]
+
+
 train_split <- createDataPartition(y=traindata$classe, p=0.7, list=FALSE)
 mytrain <- traindata[train_split, ]
 mytest <- traindata[-train_split, ]
 
+```
+
+
+
+## Learning Model
+
+I’ll use Random Forest and Classification Tree model to do the prediction. 
+
+
+```{r echo= FALSE, warning=FALSE, comment=FALSE}
+
+set.seed(346)
+library(randomForest)
+modelrf <- randomForest(classe ~ ., data=mytrain)
+
+modelct <- train(classe ~ ., data = mytrain, method="rpart")
+
+#using RF model to test on my test data
+prediction_rf <- predict(modelrf, mytest, type = "class")
+prediction_ct <- predict(modelct, newdata=mytest)
+
+
+#Analyse Confidence level using confusion Matrix on my test data
+
+conf_mtx_rf <- confusionMatrix(prediction_rf, mytest$classe)
+conf_mtx_ct <- confusionMatrix(prediction_ct, mytest$classe)
+conf_mtx_rf
+conf_mtx_ct
 
 ```
 
-## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+##Prediction using real test data
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+Since we thing the Random Forest methos confidence level is acceptable, we will use this model on test data
 
-```{r cars}
-summary(cars)
+```{r warning=FALSE, comment=FALSE}
+prediction_final <- predict(modelrf, testdata, type = "class")
+prediction_final
+
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+##Conclusion
+We can use the training data figure out a resonable model which is Random Forest within reasonable confidence. So we apply this model to the test data and got the above prediction.
