@@ -2,6 +2,10 @@
 PML class project
 nothing fancy
 
+User friendly URL to view knit output:
+
+ http://htmlpreview.github.com/?
+
 Credit: The data for this project come from this source: http://groupware.les.inf.puc-rio.br/har
 
 First we read them into the working directory
